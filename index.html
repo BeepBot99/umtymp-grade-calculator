@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>The Unofficial UMTYMP Grade Calculator for UMTYMP Calculus Courses</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tagsinput@1.0.3/dist/js/bulma-tagsinput.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.2/css/bulma.min.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tagsinput@1.0.3/dist/css/bulma-tagsinput.min.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bulma-checkradio@2.1.3/dist/css/bulma-checkradio.min.css" />
+    </head>
+    <body>
+        <div class="container mt-5 mb-5">
+            <h1 class="title is-1">
+                The Unofficial UMTYMP Grade Calculator for UMTYMP Calculus Courses
+            </h1>
+            <div class="field">
+                <label class="label" for="homework-input">Written Homework</label>
+                <div class="control">
+                    <input
+                        class="input"
+                        id="homework-input"
+                        type="text"
+                        data-type="tags"
+                        data-allow-duplicates="true"
+                        placeholder="Type a homework score and press enter. If the homework was late, add L to the end like this: 18L."
+                        value="" />
+                </div>
+            </div>
+            <div class="field">
+                <span class="label">Did you pass the gateway?</span>
+                <input
+                    class="is-checkradio"
+                    id="gateway-cb"
+                    type="checkbox"
+                    name="gateway-cb"
+                    checked="checked" />
+                <label for="gateway-cb">Yes</label>
+            </div>
+            <div class="field">
+                <span class="label">Did you get 100% on WeBWork?</span>
+                <input
+                    class="is-checkradio"
+                    id="webwork-cb"
+                    type="checkbox"
+                    name="webwork-cb"
+                    checked="checked" />
+                <label for="webwork-cb">Yes</label>
+            </div>
+            <div class="field is-hidden" id="webwork-input">
+                <label class="label" for="webwork-input">WeBWork</label>
+                <div class="control">
+                    <input
+                        class="input"
+                        type="text"
+                        data-type="tags"
+                        data-allow-duplicates="true"
+                        id="webwork-input"
+                        placeholder="Type a WeBWork score in the form score/possible and press enter. For example, 18/20."
+                        value="" />
+                </div>
+            </div>
+            <div class="field">
+                <label for="exam-1" class="label">Exam 1</label>
+                <input type="number" name="exam-1" id="exam-1" class="input" />
+                <div class="control"></div>
+            </div>
+            <div class="field">
+                <input
+                    class="is-checkradio"
+                    id="quiz-cb"
+                    type="checkbox"
+                    name="quiz-cb"
+                    checked="checked" />
+                <label for="quiz-cb">Exam 1 was a quiz</label>
+            </div>
+            <div class="field">
+                <label for="exam-2" class="label">Exam 2</label>
+                <input type="number" name="exam-2" id="exam-2" class="input" />
+                <div class="control"></div>
+            </div>
+            <div class="field">
+                <label for="exam-3" class="label">Exam 3</label>
+                <div class="control">
+                    <input type="number" name="exam-3" id="exam-3" class="input" />
+                </div>
+            </div>
+            <div class="field">
+                <label for="tdqs" class="label">TDQs Completed</label>
+                <div class="control">
+                    <input type="number" name="tdqs" id="tdqs" class="input" />
+                </div>
+            </div>
+            <div class="field">
+                <label for="total-tdqs" class="label">Total Number of TDQs</label>
+                <div class="control">
+                    <input type="number" name="total-tdqs" id="total-tdqs" class="input" />
+                </div>
+            </div>
+            <div class="field">
+                <label for="participation" class="label">Participation Grade</label>
+                <div class="control">
+                    <input
+                        type="number"
+                        name="participation"
+                        id="participation"
+                        class="input"
+                        value="90" />
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <button class="button is-primary" id="calculate">Calculate my grade!</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            const tagsInputs = BulmaTagsInput.attach();
+            const homeworkInput = tagsInputs[0];
+            const webworkInput = tagsInputs[1];
+            $("#webwork-cb").click(() => $("#webwork-input").toggleClass("is-hidden"));
+            $("#calculate").click(() => {
+                Swal.fire({
+                    title: "Here is your grade:",
+                    html: `You got ${formatPercentage(
+                        calculateGrade()
+                    )}!<br>Homework: ${formatPercentage(
+                        calculateHomeworkGrade()
+                    )}<br>WeBWork: ${formatPercentage(
+                        calculateWebworkGrade()
+                    )}<br>Exams: ${formatPercentage(
+                        calculateExamGrade()
+                    )}<br>Participation: ${formatPercentage(calculateParticipationGrade())}`,
+                    icon: "success",
+                    confirmButtonText: "Cool"
+                });
+            });
+
+            function calculateHomeworkGrade() {
+                let grade = 0;
+                let possiblePoints = 0;
+                homeworkInput.items.forEach(item => {
+                    if (!isNaN(item)) {
+                        grade += +item;
+                        possiblePoints += 20;
+                    }
+                    if (item.slice(-1) === "L" && !isNaN(item.slice(0, -1))) {
+                        grade += 0.75 * +item.slice(0, -1);
+                        possiblePoints += 20;
+                    }
+                });
+                if ($("#gateway-cb").is(":checked")) {
+                    grade += 25;
+                    possiblePoints += 25;
+                }
+                if (isNaN(grade / possiblePoints)) return 0;
+                return grade / possiblePoints;
+            }
+
+            function calculateWebworkGrade() {
+                if ($("#webwork-cb").is(":checked")) return 1;
+                let grade = 0;
+                let possiblePoints = 0;
+                webworkInput.items.forEach(item => {
+                    const match = item.match(/^(\d+)\/(\d+)$/);
+                    if (match) {
+                        grade += +match[1];
+                        possiblePoints += +match[2];
+                    }
+                });
+                if (isNaN(grade / possiblePoints)) return 0;
+                return grade / possiblePoints;
+            }
+
+            function calculateExamGrade() {
+                let grade = 0;
+                let possiblePoints = 0;
+                grade += +$("#exam-1").val();
+                possiblePoints += $("#exam-1").val()
+                    ? $("#quiz-cb").is(":checked")
+                        ? 50
+                        : 100
+                    : 0;
+                grade += +$("#exam-2").val();
+                possiblePoints += $("#exam-2").val() ? 100 : 0;
+                grade += +$("#exam-3").val();
+                possiblePoints += $("#exam-3").val() ? 100 : 0;
+                if (isNaN(grade / possiblePoints)) return 0;
+                return grade / possiblePoints;
+            }
+
+            function calculateParticipationGrade() {
+                const grade = +$("#tdqs").val() * 2 + +$("#participation").val();
+                let possiblePoints = +$("#total-tdqs").val() * 2 + 100;
+                return grade / possiblePoints;
+            }
+
+            function calculateGrade() {
+                const grade =
+                    0.15 * calculateWebworkGrade() +
+                    0.3 * calculateHomeworkGrade() +
+                    0.45 * calculateExamGrade() +
+                    0.1 * calculateParticipationGrade();
+                return grade;
+            }
+
+            function formatPercentage(num) {
+                return (num * 100).toFixed() + "%";
+            }
+        </script>
+    </body>
+</html>
