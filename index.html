@@ -36,14 +36,10 @@
                 </div>
             </div>
             <div class="field">
-                <span class="label">Did you pass the gateway?</span>
-                <input
-                    class="is-checkradio"
-                    id="gateway-cb"
-                    type="checkbox"
-                    name="gateway-cb"
-                    checked="checked" />
-                <label for="gateway-cb">Yes</label>
+                <label class="label" for="gateway">How many attempts for the gateway?</label>
+                <div class="control">
+                    <input type="number" name="gateway" id="gateway" class="input" value="1" />
+                </div>
             </div>
             <div class="field">
                 <span class="label">Did you get 100% on WeBWork?</span>
@@ -146,7 +142,7 @@
 
             function calculateHomeworkGrade() {
                 let grade = 0;
-                let possiblePoints = 0;
+                let possiblePoints = 25;
                 homeworkInput.items.forEach(item => {
                     if (!isNaN(item)) {
                         grade += +item;
@@ -157,10 +153,7 @@
                         possiblePoints += 20;
                     }
                 });
-                if ($("#gateway-cb").is(":checked")) {
-                    grade += 25;
-                    possiblePoints += 25;
-                }
+                grade += 25 - (+$("#gateway").val() - 1) * 5;
                 if (isNaN(grade / possiblePoints)) return 0;
                 return grade / possiblePoints;
             }
