@@ -2,7 +2,7 @@
     import {page} from "$app/state";
 
     const pages = ["written", "webwork", "exams", "participation", "results"]
-        .map(url => `/${url}`);
+        .map(url => `/umtymp-grade-calculator/${url}`);
 
     let previousPage = $derived(pages[pages.indexOf(page.url.pathname) - 1]);
 
