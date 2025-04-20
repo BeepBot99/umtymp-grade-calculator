@@ -18,5 +18,5 @@
         <a href={nextPage} class:btn-disabled={page.url.pathname === pages.at(-1)} class="join-item btn btn-primary w-35"
            type="button">Next</a>
     </div>
-    <a href="/" data-sveltekit-reload onclick={() => sessionStorage.clear()} class="btn btn-error w-15">Restart</a>
+    <a href="/umtymp-grade-calculator" data-sveltekit-reload onclick={() => sessionStorage.clear()} class="btn btn-error w-15">Restart</a>
 </div>
