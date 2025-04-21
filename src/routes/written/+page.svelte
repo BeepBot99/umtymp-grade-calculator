@@ -4,11 +4,7 @@
 	import type { WinterSummerAssignmentScore, WrittenHomeworkScore } from '$lib';
 
 	let scores: WrittenHomeworkScore[] = $state([]);
-	let summerWinter: WinterSummerAssignmentScore = $state({
-		possible: NaN,
-		score: NaN,
-		late: false
-	});
+	let summerWinter: WinterSummerAssignmentScore = $state() as WinterSummerAssignmentScore;
 	function addScore() {
 		scores.push({ score: NaN, late: false });
 	}
@@ -23,7 +19,9 @@
 
 	onMount(() => {
 		const storedScores = sessionStorage.getItem('written');
+		const storedSummerWinter = sessionStorage.getItem('summerWinter');
 		scores = storedScores ? JSON.parse(storedScores) : [{ score: NaN, late: false }];
+		summerWinter = storedSummerWinter ? JSON.parse(storedSummerWinter) : { score: NaN, possible: NaN, late: false };
 		document.getElementById('hw-score-0')?.focus();
 		gsap.from(fieldset, {
 			y: -50,
