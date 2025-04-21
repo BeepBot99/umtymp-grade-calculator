@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
-	import type { ExamData, ParticipationData, WebworkScore, WrittenHomeworkScore } from '$lib';
+	import type {
+		ExamData,
+		ParticipationData,
+		WebworkScore,
+		WinterSummerAssignmentScore,
+		WrittenHomeworkScore
+	} from '$lib';
 
 	let fieldset: HTMLFieldSetElement = $state() as HTMLFieldSetElement;
 
@@ -14,6 +20,9 @@
 	) as WrittenHomeworkScore[];
 	let webwork: WebworkScore[] = JSON.parse(sessionStorage.getItem('webwork')!!) as WebworkScore[];
 	let allWebwork: boolean = sessionStorage.getItem('allWebwork') === 'true';
+	let summerWinter: WinterSummerAssignmentScore = JSON.parse(
+		sessionStorage.getItem('summerWinter')!!
+	) as WinterSummerAssignmentScore;
 
 	onMount(() => {
 		gsap.from(fieldset, {
@@ -27,13 +36,17 @@
 		return (+(num * 100).toFixed(2)).toString();
 	}
 
-	function calculateWrittenGrade(scores: WrittenHomeworkScore[], gatewayAttempts: number) {
+	function calculateWrittenGrade(
+		scores: WrittenHomeworkScore[],
+		gatewayAttempts: number,
+		summerWinter: WinterSummerAssignmentScore
+	) {
 		return (
 			scores.reduce(
-				(acc, score) => (score.score ? acc + score.score * (score.late ? 0.75 : 1) : acc),
+				(acc, score) => acc + score.score * (score.late ? 0.75 : 1),
 				25 - (gatewayAttempts - 1) * 5
 			) /
-			(25 + 20 * scores.reduce((acc, score) => (score.score ? acc + 1 : acc), 0))
+			(25 + 20 * scores.filter((score) => score.score !== null).length)
 		);
 	}
 
@@ -53,7 +66,12 @@
 	}
 
 	function calculateExamGrade(exams: ExamData) {
-		return (exams.exam1 + exams.exam2 + exams.exam3) / (200 + (exams.exam1Quiz ? 50 : 100));
+		const score =
+			(exams.exam1 + exams.exam2 + exams.exam3) /
+			((exams.exam2 === null ? 0 : 100) +
+				(exams.exam3 === null ? 0 : 100) +
+				(exams.exam1 === null ? 0 : exams.exam1Quiz ? 50 : 100));
+		return isNaN(score) ? 0 : score;
 	}
 
 	function calculateTotalGrade(
@@ -65,7 +83,9 @@
 		return webworkGrade * 0.15 + writtenGrade * 0.3 + examGrade * 0.45 + participationGrade * 0.1;
 	}
 
-	let writtenGrade = $derived(formatDecimal(calculateWrittenGrade(written, exams.gatewayAttempts)));
+	let writtenGrade = $derived(
+		formatDecimal(calculateWrittenGrade(written, exams.gatewayAttempts, summerWinter))
+	);
 	let webworkGrade = $derived(formatDecimal(calculateWebworkGrade(webwork, allWebwork)));
 	let participationGrade = $derived(formatDecimal(calculateParticipationGrade(participation)));
 	let examGrade = $derived(formatDecimal(calculateExamGrade(exams)));
@@ -73,7 +93,7 @@
 		formatDecimal(
 			calculateTotalGrade(
 				calculateWebworkGrade(webwork, allWebwork),
-				calculateWrittenGrade(written, exams.gatewayAttempts),
+				calculateWrittenGrade(written, exams.gatewayAttempts, summerWinter),
 				calculateParticipationGrade(participation),
 				calculateExamGrade(exams)
 			)

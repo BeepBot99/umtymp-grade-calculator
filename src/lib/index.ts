@@ -21,3 +21,9 @@ export interface WrittenHomeworkScore {
 	score: number;
 	late: boolean;
 }
+
+export interface WinterSummerAssignmentScore {
+	score: number;
+	possible: number;
+	late: boolean;
+}

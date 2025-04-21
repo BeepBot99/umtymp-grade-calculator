@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { gsap } from 'gsap';
-	import type { WrittenHomeworkScore } from '$lib';
+	import type { WinterSummerAssignmentScore, WrittenHomeworkScore } from '$lib';
 
 	let scores: WrittenHomeworkScore[] = $state([]);
-
+	let summerWinter: WinterSummerAssignmentScore = $state({
+		possible: NaN,
+		score: NaN,
+		late: false
+	});
 	function addScore() {
 		scores.push({ score: NaN, late: false });
 	}
@@ -33,6 +37,10 @@
 	$effect(() => {
 		sessionStorage.setItem('written', JSON.stringify(scores));
 	});
+
+	$effect(() => {
+		sessionStorage.setItem('summerWinter', JSON.stringify(summerWinter));
+	})
 </script>
 
 <fieldset
@@ -40,6 +48,36 @@
 	class="fieldset bg-base-200 border-base-300 rounded-box min-h-4/5 overflow-auto border p-4 lg:max-h-110 lg:min-h-1/2"
 >
 	<legend class="fieldset-legend">Written Homework</legend>
+
+	<span class="mb-0.5 font-medium text-sm">Summer/Winter Assignment</span>
+
+	<div class="join mb-4">
+		<label class="floating-label join-item">
+			<input
+				type="number"
+				placeholder="Score"
+				bind:value={summerWinter.score}
+				class="input input-md w-40"
+			/>
+			<span>Score</span>
+		</label>
+		<span class="btn btn-disabled join-item w-10">/</span>
+		<label class="floating-label join-item">
+			<input
+				type="number"
+				placeholder="Possible"
+				bind:value={summerWinter.possible}
+				class="input input-md w-40"
+			/>
+			<span>Possible</span>
+		</label>
+		<input
+			type="checkbox"
+			bind:checked={summerWinter.late}
+			class="btn join-item"
+			aria-label={summerWinter.late ? 'Late!' : 'Late?'}
+		/>
+	</div>
 	{#each scores as score, index}
 		<div class="join">
 			<input
