@@ -4,7 +4,11 @@
 	import type { WinterSummerAssignmentScore, WrittenHomeworkScore } from '$lib';
 
 	let scores: WrittenHomeworkScore[] = $state([]);
-	let summerWinter: WinterSummerAssignmentScore = $state() as WinterSummerAssignmentScore;
+	let summerWinter: WinterSummerAssignmentScore = $state({
+		score: NaN,
+		possible: NaN,
+		late: false
+	});
 	function addScore() {
 		scores.push({ score: NaN, late: false });
 	}
@@ -21,7 +25,9 @@
 		const storedScores = sessionStorage.getItem('written');
 		const storedSummerWinter = sessionStorage.getItem('summerWinter');
 		scores = storedScores ? JSON.parse(storedScores) : [{ score: NaN, late: false }];
-		summerWinter = storedSummerWinter ? JSON.parse(storedSummerWinter) : { score: NaN, possible: NaN, late: false };
+		summerWinter = storedSummerWinter
+			? JSON.parse(storedSummerWinter)
+			: { score: NaN, possible: NaN, late: false };
 		document.getElementById('hw-score-0')?.focus();
 		gsap.from(fieldset, {
 			y: -50,
@@ -38,7 +44,7 @@
 
 	$effect(() => {
 		sessionStorage.setItem('summerWinter', JSON.stringify(summerWinter));
-	})
+	});
 </script>
 
 <fieldset
@@ -47,7 +53,7 @@
 >
 	<legend class="fieldset-legend">Written Homework</legend>
 
-	<span class="mb-0.5 font-medium text-sm">Summer/Winter Assignment</span>
+	<span class="mb-0.5 text-sm font-medium">Summer/Winter Assignment</span>
 
 	<div class="join mb-4">
 		<label class="floating-label join-item">
